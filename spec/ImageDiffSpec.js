@@ -2,7 +2,8 @@ var
   //TODO can roll isNode up into a function if checks get longer
   isNode    = typeof module !== 'undefined',
   Canvas    = isNode && require('canvas'),
-  imagediff = imagediff || require('../js/imagediff.js');
+  imagediff = imagediff || require('../js/imagediff.js'),
+  fs        = isNode && require('fs');
 
 describe('ImageUtils', function() {
 
@@ -135,8 +136,13 @@ describe('ImageUtils', function() {
 
         var
           result;
+  
+        var img = 'images/checkmark.png'
+        if( isNode ){
+          img = fs.readFileSync('./spec/images/checkmark.png');
+        }
 
-        image.src = 'images/checkmark.png';
+        image.src = img;
         waitsFor(function () {
           return image.complete;
         }, 'image not loaded.', 1000);
@@ -344,9 +350,17 @@ describe('ImageUtils', function() {
       imageC = newImage(),
       env, spec;
 
-    imageA.src = 'images/xmark.png';
-    imageB.src = 'images/xmark.png';
-    imageC.src = 'images/checkmark.png';
+    var imgA = 'images/xmark.png';
+    var imgB = 'images/xmark.png';
+    var imgC = 'images/checkmark.png';
+    if( isNode ){
+      imgA = fs.readFileSync('./spec/images/xmark.png');
+      imgB = fs.readFileSync('./spec/images/xmark.png');
+      imgC = fs.readFileSync('./spec/images/checkmark.png');      
+    }
+    imageA.src = imgA;
+    imageB.src = imgB;
+    imageC.src = imgC;
 
     beforeEach(function() {
       env = new jasmine.Env();
@@ -423,7 +437,7 @@ describe('ImageUtils', function() {
     if (!isNode) { return; }
 
     var
-      output = 'images/spec_output.png';
+      output = './spec/images/spec_output.png';
 
     beforeEach(function () {
       this.addMatchers(imagediff.jasmine)
@@ -447,10 +461,10 @@ describe('ImageUtils', function() {
       context.stroke();
       a = context.getImageData(0, 0, 10, 10);
 
-      imagediff.imageDataToPNG(a, output, function () {
-        image.src = output;
-      });
-
+      imagediff.imageDataToPNG(a, output);
+      img = fs.readFileSync(output);
+      image.src = img
+      
       waitsFor(function () {
         return image.complete;
       }, 'image not loaded.', 2000);
